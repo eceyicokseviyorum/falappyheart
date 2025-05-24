@@ -34,7 +34,7 @@ function draw() {
   
   // Zemin
   fill(0, 0, 0); // Siyah zemin
-  rect(0, canvasHeight - 50 * scaleFactor, canvasWidth, 50 * scaleFactor);
+  rect(0, canvasHeight - 80 * scaleFactor, canvasWidth, 80 * scaleFactor); // Zemin yüksekliği artırıldı
   
   if (!gameStarted) {
     // Başlangıç ekranı
@@ -114,7 +114,7 @@ function draw() {
   fill(255, 255, 255); // Beyaz font
   textSize(16 * scaleFactor);
   textAlign(CENTER);
-  text("Ece ve Umut için kalp topla!", canvasWidth / 2, canvasHeight - 50 * scaleFactor); // Daha yukarı kaydırıldı
+  text("Ece ve Umut için kalp topla!", canvasWidth / 2, canvasHeight - 30 * scaleFactor); // Yazı zeminin ortasına yakın
 }
 
 // Pixel art kalp çizimi
@@ -198,8 +198,8 @@ class Bird {
     this.y += this.velocity;
     
     // Yere çarpma kontrolü
-    if (this.y > canvasHeight - 50 * scaleFactor) {
-      this.y = canvasHeight - 50 * scaleFactor;
+    if (this.y > canvasHeight - 80 * scaleFactor) { // Zemin yüksekliği güncellendi
+      this.y = canvasHeight - 80 * scaleFactor;
       this.velocity = 0;
       gameOver = true;
     }
