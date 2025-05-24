@@ -7,10 +7,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <style>
     body { margin: 0; padding: 0; padding-bottom: env(safe-area-inset-bottom); display: flex; justify-content: center; align-items: center; height: 100vh; background: #ffffff; }
-    canvas { display: block; width: 100vw; height: calc(100vh - env(safe-area-inset-bottom)); max-width: 100%; max-height: 100%; }
+    #safe-area { position: relative; width: 100vw; height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+    canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
   </style>
 </head>
 <body>
+<div id="safe-area"></div>
 <script>
 let bird;
 let pipes = [];
@@ -21,10 +23,11 @@ let gameStarted = false;
 let canvasWidth, canvasHeight, scaleFactor;
 
 function setup() {
-  canvasWidth = windowWidth;
-  canvasHeight = window.innerHeight; // iOS sekme çubuğu için gerçek yükseklik
+  let safeArea = select('#safe-area');
+  canvasWidth = safeArea.elt.clientWidth;
+  canvasHeight = safeArea.elt.clientHeight;
   scaleFactor = min(canvasWidth / 400, canvasHeight / 600);
-  createCanvas(canvasWidth, canvasHeight);
+  createCanvas(canvasWidth, canvasHeight).parent('safe-area');
   bird = new Bird();
   pipes.push(new Pipe());
 }
@@ -34,7 +37,14 @@ function draw() {
   
   // Zemin
   fill(0, 0, 0); // Siyah zemin
-  rect(0, canvasHeight - 80 * scaleFactor, canvasWidth, 80 * scaleFactor); // Zemin yüksekliği artırıldı
+  rect(0, canvasHeight - 80 * scaleFactor, canvasWidth, 80 * scaleFactor);
+  
+  // Zemin yazısını zeminin üst sınırında çiz
+  fill(255, 255, 255); // Beyaz font
+  textSize(16 * scaleFactor);
+  textAlign(CENTER, CENTER);
+  let groundTop = canvasHeight - 80 * scaleFactor;
+  text("Ece ve Umut için kalp topla!", canvasWidth / 2, groundTop + 20 * scaleFactor); // Zeminin üst sınırında
   
   if (!gameStarted) {
     // Başlangıç ekranı
@@ -109,12 +119,6 @@ function draw() {
     textSize(20 * scaleFactor);
     text("Yeniden başlat için dokun", canvasWidth / 2, canvasHeight / 2 + 60 * scaleFactor);
   }
-  
-  // Zemin yazısını en üste çiz
-  fill(255, 255, 255); // Beyaz font
-  textSize(16 * scaleFactor);
-  textAlign(CENTER);
-  text("Ece ve Umut için kalp topla!", canvasWidth / 2, canvasHeight - 30 * scaleFactor); // Yazı zeminin ortasına yakın
 }
 
 // Pixel art kalp çizimi
@@ -132,12 +136,11 @@ function drawPixelHeart(x, y) {
 }
 
 function touchStarted() {
-  if (touches.length > 0) { // En az bir dokunma algılandı
+  if (touches.length > 0) {
     if (!gameStarted) {
       gameStarted = true;
-      lives = 4; // Canları sıfırla
+      lives = 4;
     } else if (gameOver) {
-      // Oyunu yeniden başlat
       bird = new Bird();
       pipes = [];
       score = 0;
@@ -149,15 +152,14 @@ function touchStarted() {
       bird.up();
     }
   }
-  return false; // Varsayılan dokunmatik davranışı engelle
+  return false;
 }
 
 function mousePressed() {
   if (!gameStarted) {
     gameStarted = true;
-    lives = 4; // Canları sıfırla
+    lives = 4;
   } else if (gameOver) {
-    // Oyunu yeniden başlat
     bird = new Bird();
     pipes = [];
     score = 0;
@@ -198,7 +200,7 @@ class Bird {
     this.y += this.velocity;
     
     // Yere çarpma kontrolü
-    if (this.y > canvasHeight - 80 * scaleFactor) { // Zemin yüksekliği güncellendi
+    if (this.y > canvasHeight - 80 * scaleFactor) {
       this.y = canvasHeight - 80 * scaleFactor;
       this.velocity = 0;
       gameOver = true;
@@ -219,7 +221,7 @@ class Bird {
   up() {
     if (this.jumpCooldown <= 0) {
       this.velocity += this.lift;
-      this.jumpCooldown = 8; // Mobilde hızlı tepki
+      this.jumpCooldown = 8;
     }
   }
 }
