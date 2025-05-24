@@ -6,8 +6,8 @@
   <title>Yakala Kalbimi</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <style>
-    body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #ffffff; }
-    canvas { display: block; max-width: 100%; max-height: 100%; }
+    body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #ffffff; }
+    canvas { display: block; width: 100vw; height: 100vh; max-width: 100%; max-height: 100%; }
   </style>
 </head>
 <body>
@@ -15,14 +15,14 @@
 let bird;
 let pipes = [];
 let score = 0;
-let lives = 5; // 5 can
+let lives = 4; // 4 can
 let gameOver = false;
 let gameStarted = false;
 let canvasWidth, canvasHeight, scaleFactor;
 
 function setup() {
-  canvasWidth = min(windowWidth, 400);
-  canvasHeight = min(windowHeight, 600);
+  canvasWidth = windowWidth;
+  canvasHeight = windowHeight;
   scaleFactor = min(canvasWidth / 400, canvasHeight / 600);
   createCanvas(canvasWidth, canvasHeight);
   bird = new Bird();
@@ -132,20 +132,20 @@ function drawPixelHeart(x, y) {
 function touchStarted() {
   if (!gameStarted) {
     gameStarted = true;
-    lives = 5; // Canları sıfırla
+    lives = 4; // Canları sıfırla
   } else if (gameOver) {
     // Oyunu yeniden başlat
     bird = new Bird();
     pipes = [];
     score = 0;
-    lives = 5;
+    lives = 4;
     gameOver = false;
     gameStarted = true;
     pipes.push(new Pipe());
   } else {
     bird.up();
   }
-  return false;
+  return false; // Varsayılan dokunmatik davranışı engelle
 }
 
 function mousePressed() {
@@ -162,8 +162,8 @@ class Bird {
   constructor() {
     this.y = canvasHeight / 2;
     this.x = 64 * scaleFactor;
-    this.gravity = 0.3 * scaleFactor;
-    this.lift = -6 * scaleFactor;
+    this.gravity = 0.33 * scaleFactor; // İstenen yerçekimi
+    this.lift = -5.75 * scaleFactor; // İstenen zıplama gücü
     this.velocity = 0;
     this.maxVelocity = 7 * scaleFactor;
     this.jumpCooldown = 0;
