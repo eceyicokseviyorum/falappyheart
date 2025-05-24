@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Yakala Kalbimi</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <style>
+    body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #ffffff; }
+    canvas { display: block; max-width: 100%; max-height: 100%; }
+  </style>
+</head>
+<body>
+<script>
+let bird;
+let pipes = [];
+let score = 0;
+let gameOver = false;
+let gameStarted = false;
+let canvasWidth, canvasHeight, scaleFactor;
+
+function setup() {
+  // Ekran boyutuna göre canvas oluştur
+  canvasWidth = min(windowWidth, 400);
+  canvasHeight = min(windowHeight, 600);
+  scaleFactor = min(canvasWidth / 400, canvasHeight / 600);
+  createCanvas(canvasWidth, canvasHeight);
+  bird = new Bird();
+  pipes.push(new Pipe());
+}
+
+function draw() {
+  background(255, 255, 255); // Beyaz arkaplan
+  
+  // Zemin
+  fill(0, 0, 0); // Siyah zemin
+  rect(0, canvasHeight - 50 * scaleFactor, canvasWidth, 50 * scaleFactor);
+  
+  if (!gameStarted) {
+    // Başlangıç ekranı
+    fill(0);
+    textSize(32 * scaleFactor);
+    textAlign(CENTER);
+    text("Yakala Kalbimi", canvasWidth / 2, canvasHeight / 2 - 40 * scaleFactor);
+    textSize(20 * scaleFactor);
+    text("Başlamak için dokun", canvasWidth / 2, canvasHeight / 2);
+    return;
+  }
+  
+  if (!gameOver) {
+    // Kuşu güncelle
+    bird.update();
+    bird.show();
+    
+    // Boruları güncelle
+    if (frameCount % 90 === 0) {
+      pipes.push(new Pipe());
+    }
+    
+    for (let i = pipes.length - 1; i >= 0; i--) {
+      pipes[i].show();
+      pipes[i].update();
+      
+      // Çarpışma kontrolü
+      if (pipes[i].hits(bird)) {
+        gameOver = true;
+      }
+      
+      // Kalp toplama kontrolü
+      if (pipes[i].hitsHeart(bird)) {
+        score++;
+        pipes[i].heartCollected = true;
+      }
+      
+      // Geçilen boruları sil
+      if (pipes[i].offscreen()) {
+        pipes.splice(i, 1);
+      }
+    }
+    
+    // Puanı göster
+    fill(255, 0, 0); // Kırmızı skor
+    textSize(32 * scaleFactor);
+    textAlign(LEFT);
+    text(score, 10 * scaleFactor, 50 * scaleFactor);
+  } else {
+    // Oyun bitti ekranı
+    fill(0);
+    textSize(32 * scaleFactor);
+    textAlign(CENTER);
+    text("Oyun Bitti!", canvasWidth / 2, canvasHeight / 2 - 20 * scaleFactor);
+    text("Puan: " + score, canvasWidth / 2, canvasHeight / 2 + 20 * scaleFactor);
+    textSize(20 * scaleFactor);
+    text("Yeniden başlat için dokun", canvasWidth / 2, canvasHeight / 2 + 60 * scaleFactor);
+  }
+  
+  // Zemin yazısını en üste çiz
+  fill(255, 255, 255); // Beyaz font
+  textSize(16 * scaleFactor);
+  textAlign(CENTER);
+  text("Ece ve Umut için kalp topla!", canvasWidth / 2, canvasHeight - 30 * scaleFactor);
+}
+
+function touchStarted() {
+  if (!gameStarted) {
+    gameStarted = true;
+  } else if (gameOver) {
+    // Oyunu yeniden başlat
+    bird = new Bird();
+    pipes = [];
+    score = 0;
+    gameOver = false;
+    gameStarted = true;
+    pipes.push(new Pipe());
+  } else {
+    bird.up();
+  }
+  return false; // Varsayılan dokunmatik davranışı engelle
+}
+
+function mousePressed() {
+  touchStarted(); // Fare tıklamaları için de aynı mantığı kullan
+}
+
+function keyPressed() {
+  if (key === ' ' && gameStarted && !gameOver) {
+    bird.up();
+  }
+}
+
+class Bird {
+  constructor() {
+    this.y = canvasHeight / 2;
+    this.x = 64 * scaleFactor;
+    this.gravity = 0.3 * scaleFactor;
+    this.lift = -6 * scaleFactor;
+    this.velocity = 0;
+    this.maxVelocity = 7 * scaleFactor;
+    this.jumpCooldown = 0;
+  }
+  
+  show() {
+    fill(128, 0, 128); // Mor kuş
+    ellipse(this.x, this.y, 32 * scaleFactor, 32 * scaleFactor);
+  }
+  
+  update() {
+    this.velocity += this.gravity;
+    this.velocity = constrain(this.velocity, -this.maxVelocity, this.maxVelocity);
+    this.y += this.velocity;
+    
+    // Yere çarpma kontrolü
+    if (this.y > canvasHeight - 50 * scaleFactor) {
+      this.y = canvasHeight - 50 * scaleFactor;
+      this.velocity = 0;
+      gameOver = true;
+    }
+    
+    // Tavana çarpma kontrolü
+    if (this.y < 0) {
+      this.y = 0;
+      this.velocity = 0;
+    }
+    
+    // Soğuma süresini azalt
+    if (this.jumpCooldown > 0) {
+      this.jumpCooldown--;
+    }
+  }
+  
+  up() {
+    if (this.jumpCooldown <= 0) {
+      this.velocity += this.lift;
+      this.jumpCooldown = 10;
+    }
+  }
+}
+
+class Pipe {
+  constructor() {
+    this.spacing = 200 * scaleFactor;
+    this.top = random(canvasHeight / 4, canvasHeight / 2);
+    this.bottom = canvasHeight - (this.top + this.spacing);
+    this.x = canvasWidth;
+    this.w = 50 * scaleFactor;
+    this.speed = 1.8 * scaleFactor;
+    this.passed = false;
+    this.heartCollected = false;
+    this.heartY = this.top + this.spacing / 2;
+  }
+  
+  show() {
+    fill(0, 0, 0); // Siyah borular
+    rect(this.x, 0, this.w, this.top);
+    rect(this.x, canvasHeight - this.bottom, this.w, this.bottom);
+    
+    // Kalp emojisi
+    if (!this.heartCollected) {
+      fill(255, 0, 0);
+      textSize(32 * scaleFactor);
+      textAlign(CENTER, CENTER);
+      text("❤️", this.x + this.w / 2, this.heartY);
+    }
+  }
+  
+  update() {
+    this.x -= this.speed;
+  }
+  
+  offscreen() {
+    return this.x < -this.w;
+  }
+  
+  hits(bird) {
+    if (bird.y < this.top || bird.y > canvasHeight - this.bottom) {
+      if (bird.x > this.x && bird.x < this.x + this.w) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  hitsHeart(bird) {
+    if (this.heartCollected) return false;
+    let heartX = this.x + this.w / 2;
+    let heartY = this.heartY;
+    let d = dist(bird.x, bird.y, heartX, heartY);
+    return d < 20 * scaleFactor;
+  }
+}
+</script>
+</body>
+</html>
