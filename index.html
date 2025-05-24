@@ -15,12 +15,12 @@
 let bird;
 let pipes = [];
 let score = 0;
+let lives = 5; // 5 can
 let gameOver = false;
 let gameStarted = false;
 let canvasWidth, canvasHeight, scaleFactor;
 
 function setup() {
-  // Ekran boyutuna göre canvas oluştur
   canvasWidth = min(windowWidth, 400);
   canvasHeight = min(windowHeight, 600);
   scaleFactor = min(canvasWidth / 400, canvasHeight / 600);
@@ -72,6 +72,15 @@ function draw() {
         pipes[i].heartCollected = true;
       }
       
+      // Kalp toplamadan geçme kontrolü
+      if (pipes[i].passesWithoutHeart(bird)) {
+        lives--;
+        pipes[i].passed = true;
+        if (lives <= 0) {
+          gameOver = true;
+        }
+      }
+      
       // Geçilen boruları sil
       if (pipes[i].offscreen()) {
         pipes.splice(i, 1);
@@ -83,6 +92,11 @@ function draw() {
     textSize(32 * scaleFactor);
     textAlign(LEFT);
     text(score, 10 * scaleFactor, 50 * scaleFactor);
+    
+    // Kalpleri göster (sağ üst)
+    for (let i = 0; i < lives; i++) {
+      drawPixelHeart(canvasWidth - (30 * scaleFactor * (i + 1)), 20 * scaleFactor);
+    }
   } else {
     // Oyun bitti ekranı
     fill(0);
@@ -101,25 +115,41 @@ function draw() {
   text("Ece ve Umut için kalp topla!", canvasWidth / 2, canvasHeight - 30 * scaleFactor);
 }
 
+// Pixel art kalp çizimi
+function drawPixelHeart(x, y) {
+  fill(255, 0, 0);
+  noStroke();
+  let size = 10 * scaleFactor;
+  rect(x, y, size, size); // Sol üst
+  rect(x + size, y, size, size); // Sağ üst
+  rect(x - size, y + size, size, size); // Sol orta
+  rect(x + 2 * size, y + size, size, size); // Sağ orta
+  rect(x, y + 2 * size, size, size); // Sol alt
+  rect(x + size, y + 2 * size, size, size); // Orta alt
+  rect(x + 2 * size, y + 2 * size, size, size); // Sağ alt
+}
+
 function touchStarted() {
   if (!gameStarted) {
     gameStarted = true;
+    lives = 5; // Canları sıfırla
   } else if (gameOver) {
     // Oyunu yeniden başlat
     bird = new Bird();
     pipes = [];
     score = 0;
+    lives = 5;
     gameOver = false;
     gameStarted = true;
     pipes.push(new Pipe());
   } else {
     bird.up();
   }
-  return false; // Varsayılan dokunmatik davranışı engelle
+  return false;
 }
 
 function mousePressed() {
-  touchStarted(); // Fare tıklamaları için de aynı mantığı kullan
+  touchStarted();
 }
 
 function keyPressed() {
@@ -226,6 +256,13 @@ class Pipe {
     let heartY = this.heartY;
     let d = dist(bird.x, bird.y, heartX, heartY);
     return d < 20 * scaleFactor;
+  }
+  
+  passesWithoutHeart(bird) {
+    if (!this.passed && !this.heartCollected && bird.x > this.x + this.w) {
+      return true;
+    }
+    return false;
   }
 }
 </script>
