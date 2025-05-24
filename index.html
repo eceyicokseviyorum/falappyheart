@@ -130,6 +130,27 @@ function drawPixelHeart(x, y) {
 }
 
 function touchStarted() {
+  if (touches.length > 0) { // En az bir dokunma algılandı
+    if (!gameStarted) {
+      gameStarted = true;
+      lives = 4; // Canları sıfırla
+    } else if (gameOver) {
+      // Oyunu yeniden başlat
+      bird = new Bird();
+      pipes = [];
+      score = 0;
+      lives = 4;
+      gameOver = false;
+      gameStarted = true;
+      pipes.push(new Pipe());
+    } else {
+      bird.up();
+    }
+  }
+  return false; // Varsayılan dokunmatik davranışı engelle
+}
+
+function mousePressed() {
   if (!gameStarted) {
     gameStarted = true;
     lives = 4; // Canları sıfırla
@@ -145,11 +166,6 @@ function touchStarted() {
   } else {
     bird.up();
   }
-  return false; // Varsayılan dokunmatik davranışı engelle
-}
-
-function mousePressed() {
-  touchStarted();
 }
 
 function keyPressed() {
@@ -162,8 +178,8 @@ class Bird {
   constructor() {
     this.y = canvasHeight / 2;
     this.x = 64 * scaleFactor;
-    this.gravity = 0.33 * scaleFactor; // İstenen yerçekimi
-    this.lift = -5.75 * scaleFactor; // İstenen zıplama gücü
+    this.gravity = 0.33 * scaleFactor;
+    this.lift = -5.75 * scaleFactor;
     this.velocity = 0;
     this.maxVelocity = 7 * scaleFactor;
     this.jumpCooldown = 0;
@@ -201,7 +217,7 @@ class Bird {
   up() {
     if (this.jumpCooldown <= 0) {
       this.velocity += this.lift;
-      this.jumpCooldown = 10;
+      this.jumpCooldown = 8; // Mobilde daha hızlı tepki için
     }
   }
 }
