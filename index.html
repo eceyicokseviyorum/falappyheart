@@ -6,7 +6,7 @@
   <title>Yakala Kalbimi</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <style>
-    body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #ffffff; }
+    body { margin: 0; padding: 0; padding-bottom: env(safe-area-inset-bottom); display: flex; justify-content: center; align-items: center; height: 100vh; background: #ffffff; }
     canvas { display: block; width: 100vw; height: calc(100vh - env(safe-area-inset-bottom)); max-width: 100%; max-height: 100%; }
   </style>
 </head>
@@ -44,6 +44,8 @@ function draw() {
     text("Yakala Kalbimi", canvasWidth / 2, canvasHeight / 2 - 40 * scaleFactor);
     textSize(20 * scaleFactor);
     text("Başlamak için dokun", canvasWidth / 2, canvasHeight / 2);
+    textSize(16 * scaleFactor);
+    text("Ece ve Umut için kalp topla!", canvasWidth / 2, canvasHeight / 2 + 30 * scaleFactor);
     return;
   }
   
@@ -112,7 +114,7 @@ function draw() {
   fill(255, 255, 255); // Beyaz font
   textSize(16 * scaleFactor);
   textAlign(CENTER);
-  text("Ece ve Umut için kalp topla!", canvasWidth / 2, canvasHeight - 20 * scaleFactor); // Sekme çubuğundan kaçınmak için yukarı kaydırıldı
+  text("Ece ve Umut için kalp topla!", canvasWidth / 2, canvasHeight - 50 * scaleFactor); // Daha yukarı kaydırıldı
 }
 
 // Pixel art kalp çizimi
